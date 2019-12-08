@@ -107,30 +107,92 @@ path econ_pipes_dyn_prog(const grid& setting) {
 
   using cell_type = std::optional<path>;
 
+  //1. A = new rxc matrix
   std::vector<std::vector<cell_type>> A(setting.rows(),
                                std::vector<cell_type>(setting.columns()));
 
+  //2. base case
+  //3. A[0][0] = start
   A[0][0] = path(setting);
   assert(A[0][0].has_value());
 
-  for (coordinate r = 0; r < setting.rows(); ++r) {
-    for (coordinate c = 0; c < setting.columns(); ++c) {
-      if (setting.get(r, c) != CELL_ROCK) {
+  //4. general cases
+  //5. for i from 0 to r-1 inclusive
+  for (coordinate r = 0; r < setting.rows(); ++r) 
+	{//for r
+	//6. for j from 0 to c-1 inclusive
+    	for (coordinate c = 0; c < setting.columns(); ++c) 
+		{//for c
+			//7. if C[i][j] == X
+			if (setting.get(r, c) == CELL_ROCK)
+				{//if
+				//8. A[i][j] = None
+				A[r][c] = ;//TODO determine what the equivalent of None is
+				//9. continue
+				continue;
+				}//if
+      			if (setting.get(r, c) != CELL_ROCK) 
+				{//if
 
-        auto best = A[r][c];
+        			auto best = A[r][c];
 
-	// complete lines for computing from_above and from_left
+				// complete lines for computing from_above and from_left
 
-        // then set A[r][c] = best;
-      }
-    }
-  }
+				//10. from_above = from_left = None
+				//TODO determine what an equivalent statement would be
+
+				//11. if i > 0 and A[i-1][j] is not None
+				if((r > 0)&&(A[r-1][c] != ))//TODO determine what the equivalent of None is
+					{//if
+					//12. from_above = A[i-1][j] + [down]
+					 = A[r-1][c] + ;//TODO fill in the rest of the statement
+					}//if
+
+				//13. if j > 0 and A[i][j-1] is not None
+				if((c > 0)&&(A[r][c-1] != ))//TODO determine what the equivalent of None is
+					{//if
+					//14. from_left = A[i][j-1] + [->]
+					= A[r][c-1] + ;//TODO fill in the rest of the statement
+					}//if
+
+				//15. A[i][j] = whichever of from_above and from_left is non-None and harvests more open cells;
+				//15. or None if both from_above and from_left are None
+	
+				//16. if from_above and from_left are None
+				if(()&&())//TODO determine equivalent statement
+					{//if
+					//17. A[i][j] = None
+					A[r][c] = ;//TODO determine what the equivalent of None is
+					}//if
+	
+				//18. else if from_above is not None and harvests more open cells
+				else if (()&&())//TODO determine equivalent statement
+					{//else if
+					//19. A[i][j] = from_above
+					A[r][c] = ;//TODO determine what the equivalent of from_above is
+					}//else if
+				
+				//20. else if from_left is not None and harvests more open cells
+				else if (()&&())//TODO determine equivalent statement
+					{//else if
+					//21. A[i][j] = from_left
+					A[r][c] = ;//TODO determine what the equivalent of from_left is
+					}//else if
+				
+        			// then set A[r][c] = best;
+				A[r][c] = best;
+      				}//if
+    		}//for c
+  	}//for r
   
+  //22. post-processing to find maximum open-cells path
   coordinate r = setting.rows()-1;
   coordinate c = setting.columns()-1;
+  //23. best = A[r-1][c-1]
   cell_type * best = &(A[r][c]);
   assert(best->has_value());
+  //24. return best
   return **best;
-}
+}//function
   
 }
