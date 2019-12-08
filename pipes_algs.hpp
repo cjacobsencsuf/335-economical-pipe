@@ -39,14 +39,56 @@ path econ_pipes_exhaustive(const grid& setting) {
   // TODO: implement the exhaustive search algorithm, then delete this
   // comment.
 
+  //1. maxlen = r + c - 2
+  const size_t maxlen = setting.rows() + setting.columns() - 2;
+
+  //2. best = None
   path best(setting);
 
+  int bit;
+
   // compute each candidate and compare it with best
+  //3. for bits from 0 to (2^maxlen - 1) inclusive
+  for (int bits = 0; bits <= ; ++bits)//TODO figure out what bits <
+	{//for bits
+	//4. candidate = [start]
+	path candidate(setting);
+	
+	//5. for k from 0 to len - 1 inclusive:
+	for(int k = 0; k <= total_steps; ++k)
+		{//for k
+		//6. bit = (bits >> k) & 1
+		bit = (bits >> k) & 1;
+		
+		//7. if bit == 1
+		if (bit == 1)
+			{//if bit = 1
+			//8. candidate.add(->)
+			candidate.add_step(STEP_DIRECTION_RIGHT);
+			}//if bit = 1
+		//9. else
+		else
+			{//else
+			//10. candidate.add(V)
+			candidate.add_step(STEP_DIRECTION_DOWN);
+			}//else
+		//11. if candidate stays inside the grid and never crosses an X cell
+		if()//TODO fill out the if condition
+			{//if no X
+			//12. if best is None or candidate harvests more open cells than best:
+				if(()||())//TODO fill out the if conditions
+					{//if new best
+					//13. best = candidate
+					//TODO store candidate in best
+					}//if new best
+			}//if no X
+		}//for k
+	}//for bits
     
   //if (valid && (candidate.total_open() > best.total_open())) {
   //  best = candidate;
   // }
-  
+  //14. return best
   return best;
 }
   
