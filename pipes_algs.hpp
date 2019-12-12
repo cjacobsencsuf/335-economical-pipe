@@ -43,16 +43,31 @@ path econ_pipes_exhaustive(const grid& setting) {
   const size_t maxlen = setting.rows() + setting.columns() - 2;
 
   //2. best = None
-  path best(setting);
+  std::vector<std::vector<cell_type>> best(setting.rows(),
+                               std::vector<cell_type>(setting.columns()));
+  
+
+  //check if never crossed X cell
+  bool never_crossed_x = true;//start at true
 
   int bit;
 
+  //check for best hasn't been filled yet
+  bool best_still_empty = true;
+
+  //current coordinates
+  int current_row = 0;
+  int current_col = 0;
+
   // compute each candidate and compare it with best
   //3. for bits from 0 to (2^maxlen - 1) inclusive
-  for (int bits = 0; bits <= ; ++bits)//TODO figure out what bits <
+  for (int bits = 0; bits <= ((int)pow(2,maxlen) - 1); ++bits)
 	{//for bits
 	//4. candidate = [start]
-	path candidate(setting);
+	std::vector<std::vector<cell_type>> candidate(setting.rows(),
+                               std::vector<cell_type>(setting.columns()));
+	candidate[0][0] = path(setting);
+  	assert(candidate[0][0].has_value());
 	
 	//5. for k from 0 to len - 1 inclusive:
 	for(int k = 0; k <= total_steps; ++k)
@@ -65,21 +80,31 @@ path econ_pipes_exhaustive(const grid& setting) {
 			{//if bit = 1
 			//8. candidate.add(->)
 			candidate.add_step(STEP_DIRECTION_RIGHT);
+			++current_col;
 			}//if bit = 1
 		//9. else
 		else
 			{//else
 			//10. candidate.add(V)
 			candidate.add_step(STEP_DIRECTION_DOWN);
+			++current_row;
 			}//else
+
+		//check for crossing x
+		if(candidate.get(current_row, current_col) == CELL_ROCK)
+			{//if cross x
+			never_crossed_x = false;
+			}//if cross x
 		//11. if candidate stays inside the grid and never crosses an X cell
-		if()//TODO fill out the if condition
+		if((candidate.is_row_column(current_row, current_col))&&(never_crossed_x))
 			{//if no X
 			//12. if best is None or candidate harvests more open cells than best:
-				if(()||())//TODO fill out the if conditions
+				if((best_still_empty)||(candidate.total_open() > best.total_open()))
 					{//if new best
 					//13. best = candidate
-					//TODO store candidate in best
+					//store candidate in best
+					best = candidate;
+					best_still_empty = false;
 					}//if new best
 			}//if no X
 		}//for k
