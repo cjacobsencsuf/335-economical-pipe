@@ -141,6 +141,16 @@ path econ_pipes_dyn_prog(const grid& setting) {
   A[0][0] = path(setting);
   assert(A[0][0].has_value());
 
+  //create from_above and from_left
+  std::vector<std::vector<cell_type>> from_above(setting.rows(),
+                               std::vector<cell_type>(setting.columns()));
+  std::vector<std::vector<cell_type>> from_left(setting.rows(),
+                               std::vector<cell_type>(setting.columns()));
+  from_above[0][0] = path(setting);
+  from_left[0][0] = path(setting);
+  assert(from_above[0][0].has_value());
+  assert(from_left[0][0].has_value());
+
   //4. general cases
   //5. for i from 0 to r-1 inclusive
   for (coordinate r = 0; r < setting.rows(); ++r) 
@@ -152,7 +162,9 @@ path econ_pipes_dyn_prog(const grid& setting) {
 			if (setting.get(r, c) == CELL_ROCK)
 				{//if
 				//8. A[i][j] = None
-				A[r][c] = ;//TODO determine what the equivalent of None is
+				//None is a value that shouldn't be there
+				//choose a value that shouldn't be there when you need to put a None value
+				A[r][c] = 0;
 				//9. continue
 				continue;
 				}//if
@@ -164,48 +176,51 @@ path econ_pipes_dyn_prog(const grid& setting) {
 				// complete lines for computing from_above and from_left
 
 				//10. from_above = from_left = None
-				//TODO determine what an equivalent statement would be
+				from_above[r][c] = from_left[r][c] = 0;
 
 				//11. if i > 0 and A[i-1][j] is not None
-				if((r > 0)&&(A[r-1][c] != ))//TODO determine what the equivalent of None is
+				//None is 0 or anything negative
+				if((r > 0)&&(A[r-1][c] > 0 ))
 					{//if
 					//12. from_above = A[i-1][j] + [down]
-					 = A[r-1][c] + ;//TODO fill in the rest of the statement
+					from_above[r][c] = A[r-1][c] + A[r][c];//version 1
+					//from_above[r][c] = A[r-1][c] + STEP_DIRECTION_DOWN;//version 2
 					}//if
 
 				//13. if j > 0 and A[i][j-1] is not None
-				if((c > 0)&&(A[r][c-1] != ))//TODO determine what the equivalent of None is
+				if((c > 0)&&(A[r][c-1] > 0 ))
 					{//if
 					//14. from_left = A[i][j-1] + [->]
-					= A[r][c-1] + ;//TODO fill in the rest of the statement
+					from_left[r][c] = A[r][c-1] + A[r][c];//version 1
+					//from_left[r][c] = A[r][c-1] + STEP_DIRECTION_RIGHT;//version 2
 					}//if
 
 				//15. A[i][j] = whichever of from_above and from_left is non-None and harvests more open cells;
 				//15. or None if both from_above and from_left are None
 	
 				//16. if from_above and from_left are None
-				if(()&&())//TODO determine equivalent statement
+				if((from_above[r][c] <= 0)&&(from_left[r][c] <= 0))
 					{//if
 					//17. A[i][j] = None
-					A[r][c] = ;//TODO determine what the equivalent of None is
+					A[r][c] = 0;
 					}//if
 	
 				//18. else if from_above is not None and harvests more open cells
-				else if (()&&())//TODO determine equivalent statement
+				else if ((from_above[r][c] > 0 )&&(from_above[r][c] > from_left[r][c]))
 					{//else if
 					//19. A[i][j] = from_above
-					A[r][c] = ;//TODO determine what the equivalent of from_above is
+					A[r][c] = from_above[r][c];
 					}//else if
 				
 				//20. else if from_left is not None and harvests more open cells
-				else if (()&&())//TODO determine equivalent statement
+				else if ((from_left[r][c] > 0 )&&(from_left[r][c] > from_above[r][c]))
 					{//else if
 					//21. A[i][j] = from_left
-					A[r][c] = ;//TODO determine what the equivalent of from_left is
+					A[r][c] = from_left[r][c];
 					}//else if
 				
         			// then set A[r][c] = best;
-				A[r][c] = best;
+				//A[r][c] = best;
       				}//if
     		}//for c
   	}//for r
