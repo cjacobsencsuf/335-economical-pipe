@@ -36,19 +36,11 @@ path econ_pipes_exhaustive(const grid& setting) {
   const size_t total_steps = setting.rows() + setting.columns() - 2;
   assert(total_steps < 64);
 
-  // TODO: implement the exhaustive search algorithm, then delete this
-  // comment.
-
   //1. maxlen = r + c - 2
   const size_t maxlen = setting.rows() + setting.columns() - 2;
 
   //2. best = None
-  std::vector<std::vector<cell_type>> best(setting.rows(),
-                               std::vector<cell_type>(setting.columns()));
-  
-
-  //check if never crossed X cell
-  bool never_crossed_x = true;//start at true
+  path best(setting);
 
   int bit;
 
@@ -64,10 +56,7 @@ path econ_pipes_exhaustive(const grid& setting) {
   for (int bits = 0; bits <= ((int)pow(2,maxlen) - 1); ++bits)
 	{//for bits
 	//4. candidate = [start]
-	std::vector<std::vector<cell_type>> candidate(setting.rows(),
-                               std::vector<cell_type>(setting.columns()));
-	candidate[0][0] = path(setting);
-  	assert(candidate[0][0].has_value());
+	path candidate(setting);
 	
 	//5. for k from 0 to len - 1 inclusive:
 	for(int k = 0; k <= total_steps; ++k)
@@ -79,34 +68,34 @@ path econ_pipes_exhaustive(const grid& setting) {
 		if (bit == 1)
 			{//if bit = 1
 			//8. candidate.add(->)
-			candidate.add_step(STEP_DIRECTION_RIGHT);
-			++current_col;
+			//check if possible
+			if (candidate.is_step_valid(STEP_DIRECTION_RIGHT))
+				{//if step right is valid
+				candidate.add_step(STEP_DIRECTION_RIGHT);
+				++current_col;
+				}//if step right is valid
 			}//if bit = 1
 		//9. else
 		else
 			{//else
 			//10. candidate.add(V)
-			candidate.add_step(STEP_DIRECTION_DOWN);
-			++current_row;
+			//check if possible
+			if (candidate.is_step_valid(STEP_DIRECTION_DOWN))
+				{//if step down is valid
+				candidate.add_step(STEP_DIRECTION_DOWN);
+				++current_row;
+				}//if step down is valid
 			}//else
 
-		//check for crossing x
-		if(candidate.get(current_row, current_col) == CELL_ROCK)
-			{//if cross x
-			never_crossed_x = false;
-			}//if cross x
 		//11. if candidate stays inside the grid and never crosses an X cell
-		if((candidate.is_row_column(current_row, current_col))&&(never_crossed_x))
-			{//if no X
-			//12. if best is None or candidate harvests more open cells than best:
-				if((best_still_empty)||(candidate.total_open() > best.total_open()))
-					{//if new best
-					//13. best = candidate
-					//store candidate in best
-					best = candidate;
-					best_still_empty = false;
-					}//if new best
-			}//if no X
+		//12. if best is None or candidate harvests more open cells than best:
+		if((best_still_empty)||(candidate.total_open() > best.total_open()))
+			{//if new best
+			//13. best = candidate
+			//store candidate in best
+			best = candidate;
+			best_still_empty = false;
+			}//if new best
 		}//for k
 	}//for bits
     
