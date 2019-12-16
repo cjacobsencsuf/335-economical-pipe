@@ -16,6 +16,8 @@
 
 #include "pipes_types.hpp"
 
+using namespace std;
+
 namespace pipes {
 
 // Solve the economical pipes problem for the given grid, using an exhaustive
