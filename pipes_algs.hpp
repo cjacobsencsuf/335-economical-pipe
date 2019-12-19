@@ -59,13 +59,13 @@ path econ_pipes_exhaustive(const grid& setting) {
 	{//for bits
 	//4. candidate = [start]
 	path candidate(setting);
-	
+
 	//5. for k from 0 to len - 1 inclusive:
 	for(int k = 0; k <= total_steps; ++k)
 		{//for k
 		//6. bit = (bits >> k) & 1
 		bit = (bits >> k) & 1;
-		
+
 		//7. if bit == 1
 		if (bit == 1)
 			{//if bit = 1
@@ -100,14 +100,14 @@ path econ_pipes_exhaustive(const grid& setting) {
 			}//if new best
 		}//for k
 	}//for bits
-    
+
   //if (valid && (candidate.total_open() > best.total_open())) {
   //  best = candidate;
   // }
   //14. return best
   return best;
 }
-  
+
 // Solve the economical pipes problem for the given grid, using a dynamic
 // programming algorithm.
 //
@@ -133,21 +133,23 @@ path econ_pipes_dyn_prog(const grid& setting) {
   assert(A[0][0].has_value());
 
   //create from_above and from_left
-  std::vector<std::vector<cell_type>> from_above(setting.rows(),
+  /*std::vector<std::vector<cell_type>> from_above(setting.rows(),
                                std::vector<cell_type>(setting.columns()));
   std::vector<std::vector<cell_type>> from_left(setting.rows(),
                                std::vector<cell_type>(setting.columns()));
   from_above[0][0] = path(setting);
   from_left[0][0] = path(setting);
   assert(from_above[0][0].has_value());
-  assert(from_left[0][0].has_value());
+  assert(from_left[0][0].has_value());*/
+  path from_left(setting);
+  path from_above(setting);
 
   //4. general cases
   //5. for i from 0 to r-1 inclusive
-  for (coordinate r = 0; r < setting.rows(); ++r) 
+  for (coordinate r = 0; r < setting.rows(); ++r)
 	{//for r
 	//6. for j from 0 to c-1 inclusive
-    	for (coordinate c = 0; c < setting.columns(); ++c) 
+    	for (coordinate c = 0; c < setting.columns(); ++c)
 		{//for c
 			//7. if C[i][j] == X
 			if (setting.get(r, c) == CELL_ROCK)
@@ -155,11 +157,11 @@ path econ_pipes_dyn_prog(const grid& setting) {
 				//8. A[i][j] = None
 				//None is a value that shouldn't be there
 				//choose a value that shouldn't be there when you need to put a None value
-				A[r][c] = 0;
+				A[r][c] = path(setting);
 				//9. continue
 				continue;
 				}//if
-      			if (setting.get(r, c) != CELL_ROCK) 
+      			if (setting.get(r, c) != CELL_ROCK)
 				{//if
 
         			auto best = A[r][c];
@@ -167,55 +169,57 @@ path econ_pipes_dyn_prog(const grid& setting) {
 				// complete lines for computing from_above and from_left
 
 				//10. from_above = from_left = None
-				from_above[r][c] = from_left[r][c] = 0;
+				from_above = from_left = path(setting);
 
 				//11. if i > 0 and A[i-1][j] is not None
 				//None is 0 or anything negative
-				if((r > 0)&&(A[r-1][c] > 0 ))
+        if ((r > 0)&&(A.total_open() > 0 ))
 					{//if
 					//12. from_above = A[i-1][j] + [down]
-					from_above[r][c] = A[r-1][c] + A[r][c];//version 1
+					//from_above[r][c] = A[r-1][c] + A[r][c];//version 1
 					//from_above[r][c] = A[r-1][c] + STEP_DIRECTION_DOWN;//version 2
+          from_above.add_step(STEP_DIRECTION_DOWN);
 					}//if
 
 				//13. if j > 0 and A[i][j-1] is not None
-				if((c > 0)&&(A[r][c-1] > 0 ))
+				if((c > 0)&&(A.total_open() > 0 ))
 					{//if
 					//14. from_left = A[i][j-1] + [->]
-					from_left[r][c] = A[r][c-1] + A[r][c];//version 1
+					//from_left[r][c] = A[r][c-1] + A[r][c];//version 1
 					//from_left[r][c] = A[r][c-1] + STEP_DIRECTION_RIGHT;//version 2
+          from_left.add_step(STEP_DIRECTION_RIGHT);
 					}//if
 
 				//15. A[i][j] = whichever of from_above and from_left is non-None and harvests more open cells;
 				//15. or None if both from_above and from_left are None
-	
+
 				//16. if from_above and from_left are None
-				if((from_above[r][c] <= 0)&&(from_left[r][c] <= 0))
+				if((from_above.total_open() == 0)&&(from_left.total_open() == 0))
 					{//if
 					//17. A[i][j] = None
-					A[r][c] = 0;
+					A[r][c] = path(setting);
 					}//if
-	
+
 				//18. else if from_above is not None and harvests more open cells
-				else if ((from_above[r][c] > 0 )&&(from_above[r][c] > from_left[r][c]))
+        else if ((from_above.total_open() > 0)&&(from_above.total_open() > from_left.total_open()))
 					{//else if
 					//19. A[i][j] = from_above
 					A[r][c] = from_above[r][c];
 					}//else if
-				
+
 				//20. else if from_left is not None and harvests more open cells
-				else if ((from_left[r][c] > 0 )&&(from_left[r][c] > from_above[r][c]))
+        else if ((from_left.total_open() > 0)&&(from_left.total_open() > from_above.total_open()))
 					{//else if
 					//21. A[i][j] = from_left
 					A[r][c] = from_left[r][c];
 					}//else if
-				
+
         			// then set A[r][c] = best;
 				//A[r][c] = best;
       				}//if
     		}//for c
   	}//for r
-  
+
   //22. post-processing to find maximum open-cells path
   coordinate r = setting.rows()-1;
   coordinate c = setting.columns()-1;
