@@ -118,9 +118,6 @@ path econ_pipes_dyn_prog(const grid& setting) {
   assert(setting.rows() > 0);
   assert(setting.columns() > 0);
 
-  // TODO: implement the dynamic programming algorithm, then delete this
-  // comment.
-
   using cell_type = std::optional<path>;
 
   //1. A = new rxc matrix
@@ -133,16 +130,11 @@ path econ_pipes_dyn_prog(const grid& setting) {
   assert(A[0][0].has_value());
 
   //create from_above and from_left
-  /*std::vector<std::vector<cell_type>> from_above(setting.rows(),
-                               std::vector<cell_type>(setting.columns()));
-  std::vector<std::vector<cell_type>> from_left(setting.rows(),
-                               std::vector<cell_type>(setting.columns()));
-  from_above[0][0] = path(setting);
-  from_left[0][0] = path(setting);
-  assert(from_above[0][0].has_value());
-  assert(from_left[0][0].has_value());*/
   path from_left(setting);
   path from_above(setting);
+
+  //path with none value
+  path none_path(setting);
 
   //4. general cases
   //5. for i from 0 to r-1 inclusive
@@ -157,13 +149,15 @@ path econ_pipes_dyn_prog(const grid& setting) {
 				//8. A[i][j] = None
 				//None is a value that shouldn't be there
 				//choose a value that shouldn't be there when you need to put a None value
+        cout << "cell rock hit\n";
 				A[r][c] = path(setting);
 				//9. continue
 				continue;
 				}//if
-      			if (setting.get(r, c) != CELL_ROCK)
+      			//if (setting.get(r, c) != CELL_ROCK)
+            else
 				{//if
-
+              cout << "did not hit a cell rock\n";
         			auto best = A[r][c];
 
 				// complete lines for computing from_above and from_left
@@ -171,22 +165,25 @@ path econ_pipes_dyn_prog(const grid& setting) {
 				//10. from_above = from_left = None
 				from_above = from_left = path(setting);
 
+
 				//11. if i > 0 and A[i-1][j] is not None
-				//None is 0 or anything negative
-        if ((r > 0)&&(A.total_open() > 0 ))
+        if ((r > 0)&&(from_above.is_step_valid(STEP_DIRECTION_DOWN))&& !(A[r-1][c] == none_path))
+        //if ( (r > 0)&&(from_above.is_step_valid(STEP_DIRECTION_DOWN))&&(assert(A[r-1][c].has_value())) )
 					{//if
 					//12. from_above = A[i-1][j] + [down]
-					//from_above[r][c] = A[r-1][c] + A[r][c];//version 1
-					//from_above[r][c] = A[r-1][c] + STEP_DIRECTION_DOWN;//version 2
+          //from_above = A[r-1][c];
+          //from_above = path(A[r-1][c]);
+          cout << "add step down to from above\n";
           from_above.add_step(STEP_DIRECTION_DOWN);
 					}//if
 
 				//13. if j > 0 and A[i][j-1] is not None
-				if((c > 0)&&(A.total_open() > 0 ))
+        if ((c > 0)&&(from_left.is_step_valid(STEP_DIRECTION_RIGHT)) && !(A[r][c-1] == none_path))
+        //if ((c > 0)&&(from_left.is_step_valid(STEP_DIRECTION_RIGHT)) && (assert(A[r][c-1].has_value())) )
 					{//if
 					//14. from_left = A[i][j-1] + [->]
-					//from_left[r][c] = A[r][c-1] + A[r][c];//version 1
-					//from_left[r][c] = A[r][c-1] + STEP_DIRECTION_RIGHT;//version 2
+          //from_left = A[r][c-1];
+          cout << "add step right to from left\n";
           from_left.add_step(STEP_DIRECTION_RIGHT);
 					}//if
 
@@ -194,28 +191,42 @@ path econ_pipes_dyn_prog(const grid& setting) {
 				//15. or None if both from_above and from_left are None
 
 				//16. if from_above and from_left are None
-				if((from_above.total_open() == 0)&&(from_left.total_open() == 0))
+				if((from_above == none_path)&&(from_left == none_path))
 					{//if
 					//17. A[i][j] = None
-					A[r][c] = path(setting);
-					}//if
+					best = path(setting);
+        }//if
 
-				//18. else if from_above is not None and harvests more open cells
-        else if ((from_above.total_open() > 0)&&(from_above.total_open() > from_left.total_open()))
+				//16. if from_above is not None and harvests more open cells
+        //if ((from_above != none_path)&&(from_above.total_open() > from_left.total_open()))
+        //else if ((assert(from_above->has_value()))&&(from_above.total_open() > from_left.total_open()))
+        else if (from_above.total_open() >= from_left.total_open())
 					{//else if
-					//19. A[i][j] = from_above
-					A[r][c] = from_above[r][c];
+					//17. A[i][j] = from_above
+          best = from_above;
 					}//else if
 
-				//20. else if from_left is not None and harvests more open cells
-        else if ((from_left.total_open() > 0)&&(from_left.total_open() > from_above.total_open()))
+				//18. else if from_left is not None and harvests more open cells
+        //else if ((from_left != none_path)&&(from_left.total_open() > from_above.total_open()))
+        //else if ((assert(from_left->has_value()))&&(from_left.total_open() > from_above.total_open()))
+        else if (from_left.total_open() >= from_above.total_open())
 					{//else if
-					//21. A[i][j] = from_left
-					A[r][c] = from_left[r][c];
-					}//else if
+					//19. A[i][j] = from_left
+          best = from_left;
+          }//else if
+
+          //20. else from_left and from_above are both none
+          /*else
+            {//else
+            //21. A[i][j] = None
+            best = path(setting);
+          }*///else
 
         			// then set A[r][c] = best;
-				//A[r][c] = best;
+				          A[r][c] = best;
+
+                //cout <<  A[r][c].printable();
+                //A[r-1][c].print();
       				}//if
     		}//for c
   	}//for r
