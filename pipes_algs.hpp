@@ -134,6 +134,10 @@ cout << "beginning of dynamic function \n";
   path from_left(setting);
   path from_above(setting);
 
+  //search paths, won't be overwritten to the same extent of from_left and from_above
+  path search_right(setting);
+  path search_down(setting);
+
   //path with none value
   path none_path(setting);
 
@@ -141,11 +145,11 @@ cout << "beginning of dynamic function \n";
   //5. for i from 0 to r-1 inclusive
   for (coordinate r = 0; r < setting.rows(); ++r)
 	{//for r
-    cout << "r = " << r << " / " << setting.rows() << endl;
+    cout << "r = " << r << " / " << setting.rows() - 1 << endl;
 	//6. for j from 0 to c-1 inclusive
     	for (coordinate c = 0; c < setting.columns(); ++c)
 		{//for c
-      cout << "c = " << c << " / " << setting.columns() << endl;
+      cout << "c = " << c << " / " << setting.columns() - 1 << endl;
 			//7. if C[i][j] == X
 			if (setting.get(r, c) == CELL_ROCK)
 				{//if
@@ -153,7 +157,7 @@ cout << "beginning of dynamic function \n";
 				//None is a value that shouldn't be there
 				//choose a value that shouldn't be there when you need to put a None value
         cout << "cell rock hit\n";
-				A[r][c] = path(setting);
+			//	A[r][c] = path(setting);
 				//9. continue
 				continue;
 				}//if
@@ -169,34 +173,43 @@ cout << "beginning of dynamic function \n";
 
 
 				//11. if i > 0 and A[i-1][j] is not None
+        //if((r > 0 && r < setting.rows() - 1) && A[r-1][c].has_value())
         if((r > 0) && A[r-1][c].has_value())
 					{//if
 					//12. from_above = A[i-1][j] + [down]
           from_above = A[r-1][c].value();
-          cout << "add step down to from above\n";
-            if(from_above.is_step_valid(STEP_DIRECTION_DOWN))
+    //        if(from_above.is_step_valid(STEP_DIRECTION_DOWN))
               {
+                cout << "r = " << r << " c = " << c << endl;
+                cout << "add step down\n";
                 from_above.add_step(STEP_DIRECTION_DOWN);
+                from_above.print();
               }
+              best = from_above;
 					}//if
 
 				//13. if j > 0 and A[i][j-1] is not None
+      //  if((c > 0 && c < setting.columns() - 1) && A[r][c-1].has_value())
         if((c > 0) && A[r][c-1].has_value())
 					{//if
 					//14. from_left = A[i][j-1] + [->]
           from_left = A[r][c-1].value();
-          cout << "add step right to from left\n";
-          if (from_left.is_step_valid(STEP_DIRECTION_RIGHT))
+  //       if (from_left.is_step_valid(STEP_DIRECTION_RIGHT))
             {
+              cout << "r = " << r << " c = " << c << endl;
+              cout << "add step right\n";
               from_left.add_step(STEP_DIRECTION_RIGHT);
+              from_left.print();
             }
+        if(!best.has_value() || from_left.total_open() > best.value().total_open())
+        best = from_left;
 					}//if
 
 				//15. A[i][j] = whichever of from_above and from_left is non-None and harvests more open cells;
 				//15. or None if both from_above and from_left are None
 
 				//16. if from_above is not None and harvests more open cells
-        if (from_above.total_open() >= from_left.total_open())
+      /*  if (from_above.total_open() > from_left.total_open())
 					{//else if
 					//17. A[i][j] = from_above
           best = from_above;
@@ -204,7 +217,7 @@ cout << "beginning of dynamic function \n";
 					}//else if
 
 				//18. else if from_left is not None and harvests more open cells
-        else if (from_left.total_open() >= from_above.total_open())
+        else //if (from_left.total_open() >= from_above.total_open())
 					{//else if
 					//19. A[i][j] = from_left
           best = from_left;
@@ -212,18 +225,18 @@ cout << "beginning of dynamic function \n";
           }//else if
 
           //20. else from_left and from_above are both none
-          else
+          /*else
             {//else
             //21. A[i][j] = None
             cout << "both none\n";
             best = path(setting);
-          }//else
+          }*///else
 
         			// then set A[r][c] = best;
 				          A[r][c] = best;
 
-                  cout << "r = " << r << " / " << setting.rows() << endl;
-                  cout << "c = " << c << " / " << setting.columns() << endl;
+                  //cout << "r = " << r << " / " << setting.rows() << endl;
+                  //cout << "c = " << c << " / " << setting.columns() << endl;
 
 
                 //cout <<  A[r][c].printable();
