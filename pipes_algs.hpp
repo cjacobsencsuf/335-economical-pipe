@@ -114,6 +114,7 @@ path econ_pipes_exhaustive(const grid& setting) {
 // The grid must be non-empty.
 path econ_pipes_dyn_prog(const grid& setting) {
 
+cout << "beginning of dynamic function \n";
   // grid must be non-empty.
   assert(setting.rows() > 0);
   assert(setting.columns() > 0);
@@ -140,9 +141,11 @@ path econ_pipes_dyn_prog(const grid& setting) {
   //5. for i from 0 to r-1 inclusive
   for (coordinate r = 0; r < setting.rows(); ++r)
 	{//for r
+    cout << "r = " << r << " / " << setting.rows() << endl;
 	//6. for j from 0 to c-1 inclusive
     	for (coordinate c = 0; c < setting.columns(); ++c)
 		{//for c
+      cout << "c = " << c << " / " << setting.columns() << endl;
 			//7. if C[i][j] == X
 			if (setting.get(r, c) == CELL_ROCK)
 				{//if
@@ -157,73 +160,71 @@ path econ_pipes_dyn_prog(const grid& setting) {
       			//if (setting.get(r, c) != CELL_ROCK)
             else
 				{//if
-              cout << "did not hit a cell rock\n";
         			auto best = A[r][c];
 
 				// complete lines for computing from_above and from_left
 
 				//10. from_above = from_left = None
-				from_above = from_left = path(setting);
+				//from_above = from_left = path(setting);
 
 
 				//11. if i > 0 and A[i-1][j] is not None
-        if ((r > 0)&&(from_above.is_step_valid(STEP_DIRECTION_DOWN))&& !(A[r-1][c] == none_path))
-        //if ( (r > 0)&&(from_above.is_step_valid(STEP_DIRECTION_DOWN))&&(assert(A[r-1][c].has_value())) )
+        if((r > 0) && A[r-1][c].has_value())
 					{//if
 					//12. from_above = A[i-1][j] + [down]
-          //from_above = A[r-1][c];
-          //from_above = path(A[r-1][c]);
+          from_above = A[r-1][c].value();
           cout << "add step down to from above\n";
-          from_above.add_step(STEP_DIRECTION_DOWN);
+            if(from_above.is_step_valid(STEP_DIRECTION_DOWN))
+              {
+                from_above.add_step(STEP_DIRECTION_DOWN);
+              }
 					}//if
 
 				//13. if j > 0 and A[i][j-1] is not None
-        if ((c > 0)&&(from_left.is_step_valid(STEP_DIRECTION_RIGHT)) && !(A[r][c-1] == none_path))
-        //if ((c > 0)&&(from_left.is_step_valid(STEP_DIRECTION_RIGHT)) && (assert(A[r][c-1].has_value())) )
+        if((c > 0) && A[r][c-1].has_value())
 					{//if
 					//14. from_left = A[i][j-1] + [->]
-          //from_left = A[r][c-1];
+          from_left = A[r][c-1].value();
           cout << "add step right to from left\n";
-          from_left.add_step(STEP_DIRECTION_RIGHT);
+          if (from_left.is_step_valid(STEP_DIRECTION_RIGHT))
+            {
+              from_left.add_step(STEP_DIRECTION_RIGHT);
+            }
 					}//if
 
 				//15. A[i][j] = whichever of from_above and from_left is non-None and harvests more open cells;
 				//15. or None if both from_above and from_left are None
 
-				//16. if from_above and from_left are None
-				if((from_above == none_path)&&(from_left == none_path))
-					{//if
-					//17. A[i][j] = None
-					best = path(setting);
-        }//if
-
 				//16. if from_above is not None and harvests more open cells
-        //if ((from_above != none_path)&&(from_above.total_open() > from_left.total_open()))
-        //else if ((assert(from_above->has_value()))&&(from_above.total_open() > from_left.total_open()))
-        else if (from_above.total_open() >= from_left.total_open())
+        if (from_above.total_open() >= from_left.total_open())
 					{//else if
 					//17. A[i][j] = from_above
           best = from_above;
+          from_above.print();
 					}//else if
 
 				//18. else if from_left is not None and harvests more open cells
-        //else if ((from_left != none_path)&&(from_left.total_open() > from_above.total_open()))
-        //else if ((assert(from_left->has_value()))&&(from_left.total_open() > from_above.total_open()))
         else if (from_left.total_open() >= from_above.total_open())
 					{//else if
 					//19. A[i][j] = from_left
           best = from_left;
+          from_left.print();
           }//else if
 
           //20. else from_left and from_above are both none
-          /*else
+          else
             {//else
             //21. A[i][j] = None
+            cout << "both none\n";
             best = path(setting);
-          }*///else
+          }//else
 
         			// then set A[r][c] = best;
 				          A[r][c] = best;
+
+                  cout << "r = " << r << " / " << setting.rows() << endl;
+                  cout << "c = " << c << " / " << setting.columns() << endl;
+
 
                 //cout <<  A[r][c].printable();
                 //A[r-1][c].print();
